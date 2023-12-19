@@ -1,46 +1,80 @@
 import { Peer } from "peerjs";
-import { useEffect, useState } from "react";
+import { signal } from "@preact/signals-react";
+import fileDownload from "js-file-download";
+import Layout from "./Layout/Layout";
 
-const App = ({ onDataReceived }: any) => {
-  const [peer, setPeer] = useState<any | null>(null);
-  const [dataConnection, setDataConnection] = useState<any | null>(null);
+function App() {
+  const peer = new Peer();
+  const Id = signal("");
+  const connectionId = signal("");
+  const file = signal<File | null>(null);
 
-  //   const onDataReceived = (data) => {
-  //     console.log("received", data);
-  //   };
+  peer.on("open", (id: string) => {
+    Id.value = id;
+  });
 
-  useEffect(() => {
-    const peerInstance = new Peer();
-    peerInstance.on("open", () => {
-      setPeer(peerInstance);
+  peer.on("connection", (conn) => {
+    console.log("someone is connected");
+
+    conn.on("data", (data: any) => {
+      console.log("receiving");
+      let dt = data.file;
+      if (data.file) {
+        fileDownload(dt, data.filename, data.filetype);
+      }
     });
-    peerInstance.on("connection", (conn) => {
-      setDataConnection(conn);
-      conn.on("data", (data) => {
-        onDataReceived(data);
+  });
+
+  const onFilechange = (e: any) => {
+    file.value = e.target.files[0];
+  };
+
+  const handleFileSend = () => {
+    const conn = peer.connect(connectionId.value);
+    conn.on("open", () => {
+      conn.send("hey");
+    });
+    const blob = new Blob([file.value!], { type: file.value?.type });
+    conn.on("open", () => {
+      conn.send({
+        file: blob,
+        filename: file.value?.name,
+        filetype: file.value?.type,
       });
     });
+  };
 
-    return () => {
-      peerInstance.destroy();
-    };
-  }, [onDataReceived]);
-
-  const sendFile = (file) => {
-    if (dataConnection) {
-      dataConnection.send(file);
-    }
+  const handleConnection = () => {
+    handleFileSend();
   };
 
   return (
-    <div>
-      <p>Your Peer ID: {peer?.id}</p>
-      <input
-        type="file"
-        onChange={(e) => sendFile(e.target.files[0])}
-      />
-    </div>
+    <Layout>
+      <div className="h-full flex flex-col gap-y-4 items-center justify-center bg-neutral-800 rounded-lg">
+        <div className="text-4xl font-semibold text-green-400 ">fileStore</div>
+        <div className="border rounded-lg p-3 text-lg font-semibold">{Id}</div>
+        <div className="font-semibold text-md">Input connection Id</div>
+
+        <input
+          onChange={(e) => {
+            connectionId.value = e.target.value;
+          }}
+        />
+
+        <input
+          type="file"
+          onChange={onFilechange}
+        />
+
+        <button
+          onClick={handleConnection}
+          className="bg-green-400 text-black px-5 py-3 rounded-lg font-semibold hover:opacity-80 transition"
+        >
+          Connect and send file
+        </button>
+      </div>
+    </Layout>
   );
-};
+}
 
 export default App;
