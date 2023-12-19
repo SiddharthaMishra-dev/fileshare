@@ -2,6 +2,7 @@ import { Peer } from "peerjs";
 import { signal } from "@preact/signals-react";
 import fileDownload from "js-file-download";
 import Layout from "./Layout/Layout";
+import { useEffect } from "react";
 
 function App() {
   const peer = new Peer();
@@ -13,17 +14,23 @@ function App() {
     Id.value = id;
   });
 
-  peer.on("connection", (conn) => {
-    console.log("someone is connected");
+  useEffect(() => {
+    peer.on("connection", (conn) => {
+      console.log("someone is connected");
 
-    conn.on("data", (data: any) => {
-      console.log("receiving");
-      let dt = data.file;
-      if (data.file) {
-        fileDownload(dt, data.filename, data.filetype);
-      }
+      conn.on("data", (data: any) => {
+        console.log("receiving");
+        let dt = data.file;
+        if (data.file) {
+          fileDownload(dt, data.filename, data.filetype);
+        }
+      });
     });
-  });
+
+    return () => {
+      peer.disconnect();
+    };
+  }, [peer]);
 
   const onFilechange = (e: any) => {
     file.value = e.target.files[0];
