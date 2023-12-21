@@ -5,7 +5,6 @@ import Layout from "./Layout/Layout";
 import { useEffect } from "react";
 import { FaRegClipboard } from "react-icons/fa";
 import { IoCloudUploadOutline } from "react-icons/io5";
-
 import toast from "react-hot-toast";
 
 function App() {
@@ -13,6 +12,7 @@ function App() {
   const Id = signal("");
   const connectionId = signal("");
   const file = signal<File | null>(null);
+  const fileName = signal("");
   peer.on("open", (id: string) => {
     Id.value = id;
   });
@@ -37,13 +37,12 @@ function App() {
 
   const onFilechange = (e: any) => {
     file.value = e.target.files[0];
+    fileName.value = file.value?.name || "";
+    console.log(file?.value?.name);
   };
 
   const handleFileSend = () => {
     const conn = peer.connect(connectionId.value);
-    conn.on("open", () => {
-      conn.send("hey");
-    });
     const blob = new Blob([file.value!], { type: file.value?.type });
     conn.on("open", () => {
       conn.send({
@@ -93,8 +92,10 @@ function App() {
             className="w-full flex flex-col justify-center items-center bg-neutral-700 p-6 rounded-md hover:opacity-60 transition"
           >
             <IoCloudUploadOutline size={50} />
+            <p className="text-neutral-400 font-semibold">Select your file</p>
 
-            <p className="text-neutral-400 font-semibold">Select your file </p>
+            <p>{fileName}</p>
+
             <input
               id="file-input"
               type="file"
