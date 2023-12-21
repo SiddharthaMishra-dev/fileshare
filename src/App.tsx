@@ -20,11 +20,11 @@ function App() {
   useEffect(() => {
     peer.on("connection", (conn) => {
       console.log("someone is connected");
-
       conn.on("data", (data: any) => {
-        console.log("receiving");
         let dt = data.file;
+        toast.success("file has been successfully fetched!");
         if (data.file) {
+          toast.success("downloading file");
           fileDownload(dt, data.filename, data.filetype);
         }
       });
@@ -51,6 +51,7 @@ function App() {
         filetype: file.value?.type,
       });
     });
+    toast.success("File has been send!");
   };
 
   const handleConnection = () => {
