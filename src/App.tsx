@@ -4,14 +4,15 @@ import fileDownload from "js-file-download";
 import Layout from "./Layout/Layout";
 import { useEffect } from "react";
 import { FaRegClipboard } from "react-icons/fa";
+import { IoCloudUploadOutline } from "react-icons/io5";
+
+import toast from "react-hot-toast";
 
 function App() {
   const peer = new Peer();
   const Id = signal("");
   const connectionId = signal("");
   const file = signal<File | null>(null);
-  // const inputRef = useRef<HTMLInputElement | null>(null);
-
   peer.on("open", (id: string) => {
     Id.value = id;
   });
@@ -60,14 +61,18 @@ function App() {
   return (
     <Layout>
       <div className="h-full flex flex-col gap-y-8 items-center justify-center bg-neutral-800 rounded-lg">
-        <div className="text-4xl font-semibold text-green-400 ">fileStore</div>
+        <div className="text-4xl font-semibold text-green-400 ">fileShare</div>
         <div className="flex flex-col gap-y-2 w-full max-w-[400px]">
           <p className="font-semibold text-md">Your connection Id</p>
           <div className="relative h-[50px] px-3 py-4 bg-neutral-700 rounded-md ">
             <p>{Id}</p>
             <FaRegClipboard
+              onClick={() => {
+                navigator.clipboard.writeText(Id.value);
+                toast.success("copied!!");
+              }}
               size={25}
-              className="absolute top-3 right-3"
+              className="absolute top-3 right-3 hover:text-green-400 transition"
             />
           </div>
         </div>
@@ -82,14 +87,24 @@ function App() {
           />
         </div>
 
-        <div className="px-5 py-4 flex flex-col gap-y-4 justify-center items-center border-2 rounded-lg">
-          <input
-            type="file"
-            onChange={onFilechange}
-            className="
+        <div className=" py-4 flex flex-col gap-y-4 justify-center items-center w-full max-w-[400px]">
+          <label
+            htmlFor="file-input"
+            className="w-full flex flex-col justify-center items-center bg-neutral-700 p-6 rounded-md hover:opacity-60 transition"
+          >
+            <IoCloudUploadOutline size={50} />
+
+            <p className="text-neutral-400 font-semibold">Select your file </p>
+            <input
+              id="file-input"
+              type="file"
+              onChange={onFilechange}
+              className="
+              hidden
             text-slate-500 bg-neutral-700 rounded-s-full overflow-hidden
             file:py-2 file:px-4 file:font-semibold file:rounded-full file:bg-green-200 file:text-black"
-          />
+            />
+          </label>
 
           <button
             onClick={handleConnection}
