@@ -61,7 +61,7 @@ function App() {
   return (
     <Layout>
       <div className="h-full flex flex-col gap-y-8 items-center justify-center bg-neutral-800 rounded-lg">
-        <div className="text-4xl font-semibold text-green-400 ">fileShare</div>
+        <div className="text-4xl font-semibold text-green-400 ">File-To-Share</div>
         <div className="flex flex-col gap-y-2 w-full max-w-[400px]">
           <p className="font-semibold text-md">Your connection Id</p>
           <div className="relative h-[50px] px-3 py-4 bg-neutral-700 rounded-md ">
