@@ -20,14 +20,34 @@ function App() {
   useEffect(() => {
     peer.on("connection", (conn) => {
       console.log("someone is connected");
-      conn.on("data", (data: any) => {
+
+      const dataChannel = conn.dataChannel;
+      console.log(dataChannel);
+
+      dataChannel.onopen = () => {
+        console.log("Data Channel is open");
+      };
+
+      dataChannel.onmessage = (event) => {
+        const data = JSON.parse(event.data);
         let dt = data.file;
-        toast.success("file has been successfully fetched!");
+
+        toast.success("file has been sucessfully fetched");
+
         if (data.file) {
           toast.success("downloading file");
           fileDownload(dt, data.filename, data.filetype);
         }
-      });
+      };
+
+      // conn.on("data", (data: any) => {
+      //   let dt = data.file;
+      //   toast.success("file has been successfully fetched!");
+      //   if (data.file) {
+      //     toast.success("downloading file");
+      //     fileDownload(dt, data.filename, data.filetype);
+      //   }
+      // });
     });
 
     return () => {
@@ -43,15 +63,28 @@ function App() {
 
   const handleFileSend = () => {
     const conn = peer.connect(connectionId.value);
+
+    const dataChannel = conn.dataChannel;
     const blob = new Blob([file.value!], { type: file.value?.type });
-    conn.on("open", () => {
-      conn.send({
-        file: blob,
-        filename: file.value?.name,
-        filetype: file.value?.type,
-      });
-    });
-    toast.success("File has been send!");
+
+    dataChannel.onopen = () => {
+      dataChannel.send(
+        JSON.stringify({
+          file: blob,
+          filename: file.value?.name,
+          filetype: file.value?.type,
+        })
+      );
+      toast.success("File has been send!");
+    };
+
+    // conn.on("open", () => {
+    //   conn.send({
+    //     file: blob,
+    //     filename: file.value?.name,
+    //     filetype: file.value?.type,
+    //   });
+    // });
   };
 
   const handleConnection = () => {
